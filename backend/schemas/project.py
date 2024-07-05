@@ -10,7 +10,7 @@ class ProjectBaseSchema(BaseModel):
 class ProjectCreateSchema(ProjectBaseSchema):
     pass
 
-class UpdateProjectSchema(ProjectBaseSchema):
+class ProjectUpdateSchema(ProjectBaseSchema):
     name: Optional[str]
     description: Optional[str]
 
