@@ -10,6 +10,10 @@ class ProjectBaseSchema(BaseModel):
 class ProjectCreateSchema(ProjectBaseSchema):
     pass
 
+class UpdateProjectSchema(ProjectBaseSchema):
+    name: Optional[str]
+    description: Optional[str]
+
 class ProjectResponseSchema(ProjectBaseSchema):
     id: int
     owner_id: int

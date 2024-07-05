@@ -20,8 +20,13 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
     return db_project
 
 @router.get("/", response_model=List[ProjectResponseSchema])
-def read_projects(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    projects = get_projects(db, skip=skip, limit=limit)
+def read_projects(
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    owner_id: int = Depends(get_current_user_id)
+    ):
+    projects = get_projects(db, owner_id=owner_id, skip=skip, limit=limit)
     return projects
 
 @router.delete("/{project_id}", response_model=ProjectResponseSchema)
