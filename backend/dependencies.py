@@ -43,3 +43,13 @@ def get_current_user_id(db: Session = Depends(get_db), token: str = Depends(oaut
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user.id
+
+def get_current_user(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            return user
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
