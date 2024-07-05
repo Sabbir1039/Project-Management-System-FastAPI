@@ -9,6 +9,12 @@ class UserBaseSchema(BaseModel):
 class UserCreateSchema(UserBaseSchema):
     password: str
 
+class UserUpdateSchema(UserBaseSchema):
+    username: Optional[str]
+    email: Optional[EmailStr]
+    password: Optional[str]
+    
+
 class UserResponseSchema(UserBaseSchema):
     id: int
 
