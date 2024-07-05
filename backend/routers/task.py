@@ -27,7 +27,7 @@ def read_task(task_id: int, db: Session = Depends(get_db)):
     return task
 
 # Update a task
-@router.put("/{task_id}", response_model=TaskResponseSchema)
+@router.put("/update/{task_id}", response_model=TaskResponseSchema)
 def update_existing_task(task_id: int, task_update: TaskUpdateSchema, db: Session = Depends(get_db)):
     updated_task = update_task(db, task_id, task_update)
     if updated_task is None:
@@ -35,7 +35,7 @@ def update_existing_task(task_id: int, task_update: TaskUpdateSchema, db: Sessio
     return updated_task
 
 # Delete a task
-@router.delete("/{task_id}", response_model=TaskResponseSchema)
+@router.delete("/delete/{task_id}", response_model=TaskResponseSchema)
 def delete_existing_task(task_id: int, db: Session = Depends(get_db)):
     deleted_task = delete_task(db, task_id)
     if deleted_task is None:
