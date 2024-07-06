@@ -16,7 +16,7 @@ def create_new_project(
     owner_id: int = Depends(get_current_user_id)):
     
     if not owner_id:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
     return create_project(db=db, project=project, owner_id=owner_id)
 
@@ -27,13 +27,16 @@ def read_project(
     curr_user: User = Depends(get_current_user)):
     
     if not curr_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
     try:
         db_project = get_project(db, project_id)
+        
         if db_project:
             return db_project
         else:
-            raise HTTPException(status_code=404, detail="Project not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -45,10 +48,11 @@ def update_project(
     curr_user: User = Depends(get_current_user)):
     
     if not curr_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
      
     try:
         db_project = get_project(db, project_id)
+        
         if db_project:
             if project.name:
                 db_project.name = project.name
@@ -58,7 +62,8 @@ def update_project(
             db.refresh(db_project)
             return db_project
         else:
-            raise HTTPException(status_code=404, detail="Project not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -71,14 +76,16 @@ def read_projects(
     owner_id: int = Depends(get_current_user_id)):
     
     if not owner_id:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
     try:
         projects = get_projects(db, owner_id=owner_id, skip=skip, limit=limit)
+        
         if projects:
             return projects
         else:
-            raise HTTPException(status_code=404, detail="Project not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+        
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
