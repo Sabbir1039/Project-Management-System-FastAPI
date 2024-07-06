@@ -5,6 +5,8 @@ from ..schemas.user import UserCreateSchema, UserResponseSchema, UserUpdateSchem
 from ..database import get_db
 from ..crud.user import create_user, get_user, get_user_by_email, get_users
 from ..utilities import get_hashed_password
+from ..models.user import User
+from ..dependencies import get_current_user
 
 
 router = APIRouter()
@@ -17,7 +19,15 @@ def register_user(user: UserCreateSchema, db: Session = Depends(get_db)):
     return create_user(db=db, user=user)
 
 @router.put("/update/{user_id}", response_model=UserResponseSchema)
-def update_user(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)):
+def update_user(
+    user_id: int,
+    user: UserUpdateSchema,
+    db: Session = Depends(get_db),
+    curr_user: User = Depends(get_current_user)):
+    
+    if not curr_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
     try:
         db_user = get_user(db, user_id)
         if db_user:
@@ -37,13 +47,37 @@ def update_user(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_
 
 
 @router.get("/{user_id}", response_model=UserResponseSchema)
-def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = get_user(db, user_id=user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
+def read_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    curr_user: User = Depends(get_current_user)):
+    
+    if not curr_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    try:
+        db_user = get_user(db, user_id=user_id)
+        if db_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return db_user
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
 @router.get("/", response_model=List[UserResponseSchema])
-def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    users = get_users(db, skip=skip, limit=limit)
-    return users
+def read_users(
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    curr_user: User = Depends(get_current_user)):
+    
+    if not curr_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    try:
+        users = get_users(db, skip=skip, limit=limit)
+        if not users:
+            raise HTTPException(status_code=404, detail="Users not found")
+        return users
+    
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
