@@ -13,10 +13,13 @@ router = APIRouter()
 
 @router.post("/signup", response_model=UserResponseSchema)
 def register_user(user: UserCreateSchema, db: Session = Depends(get_db)):
-    db_user = get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return create_user(db=db, user=user)
+    try:
+        db_user = get_user_by_email(db, email=user.email)
+        if db_user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+        return create_user(db=db, user=user)
+    except Exception as e:
+         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while fetching user by email")
 
 @router.put("/update/{user_id}", response_model=UserResponseSchema)
 def update_user(
@@ -26,7 +29,7 @@ def update_user(
     curr_user: User = Depends(get_current_user)):
     
     if not curr_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
     try:
         db_user = get_user(db, user_id)
@@ -53,13 +56,15 @@ def read_user(
     curr_user: User = Depends(get_current_user)):
     
     if not curr_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
     try:
         db_user = get_user(db, user_id=user_id)
+        
         if db_user is None:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return db_user
+    
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
@@ -71,12 +76,13 @@ def read_users(
     curr_user: User = Depends(get_current_user)):
     
     if not curr_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     
     try:
         users = get_users(db, skip=skip, limit=limit)
+        
         if not users:
-            raise HTTPException(status_code=404, detail="Users not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return users
     
     except Exception as e:
